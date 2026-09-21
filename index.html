@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Smart Tracker V2</title>
+    <title>My Smart Tracker V2 - PMS Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
@@ -14,13 +14,24 @@
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .animate-pop { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        /* Custom Scrollbar สำหรับ Gantt */
         .gantt-scroll::-webkit-scrollbar { height: 8px; }
         .gantt-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .gantt-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
     </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- 🌟 Datalist สำหรับเก็บชื่อคนแบบ Dynamic (ใส่ครั้งเดียวโผล่ตลอด) -->
+    <datalist id="assigneeList"></datalist>
+    
+    <!-- 🌟 Datalist สำหรับแนะนำ Action Plan มาตรฐาน -->
+    <datalist id="standardTaskList">
+        <option value="1. Initiation (เริ่มต้น/ประเมินโครงการ)">
+        <option value="2. Planning (วางแผนและออกแบบ)">
+        <option value="3. Execution (ลงมือปฏิบัติ)">
+        <option value="4. Monitoring (ติดตามและควบคุม)">
+        <option value="5. Closure (ส่งมอบและปิดโครงการ)">
+    </datalist>
 
     <div class="max-w-6xl mx-auto w-full p-4 md:p-6 mt-2">
         <!-- Header -->
@@ -53,12 +64,10 @@
         <!-- ========================================== -->
         <div id="summaryView" class="animate-pop pb-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <!-- ภารกิจวันนี้ -->
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">☀️ ภารกิจที่ต้องทำวันนี้</h3>
                     <div id="sumTodayTasks" class="space-y-2"><p class="text-gray-400">กำลังโหลด...</p></div>
                 </div>
-                <!-- To-Do Matrix -->
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">📦 To-Do Matrix</h3>
                     <div class="grid grid-cols-2 gap-3">
@@ -78,19 +87,12 @@
             <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h3 class="text-lg font-bold text-gray-800">📁 Project Timeline (Gantt Chart)</h3>
-                    <span class="text-xs text-gray-500 font-medium">* คลิกที่ชื่อโปรเจกต์เพื่อเปิด/ปิด รายการย่อย (Action Plan)</span>
+                    <span class="text-xs text-gray-500 font-medium">* คลิกที่ชื่อโปรเจกต์เพื่อเปิด/ปิด รายการย่อย</span>
                 </div>
-                
                 <div class="overflow-x-auto gantt-scroll relative">
                     <div class="min-w-[800px]">
-                        <!-- Gantt Header (เดือน) -->
-                        <div class="flex border-b border-gray-200 bg-gray-100 text-xs font-bold text-gray-500 sticky top-0 z-10" id="ganttHeader">
-                            <!-- JS จะเติมหัวตารางตรงนี้ -->
-                        </div>
-                        
-                        <!-- Gantt Body (Rows) -->
+                        <div class="flex border-b border-gray-200 bg-gray-100 text-xs font-bold text-gray-500 sticky top-0 z-10" id="ganttHeader"></div>
                         <div id="ganttBody" class="pb-10 relative">
-                            <!-- JS จะเติมข้อมูลโปรเจกต์และบาร์ตรงนี้ -->
                             <div class="py-10 text-center text-gray-400">กำลังประมวลผล Timeline...</div>
                         </div>
                     </div>
@@ -107,7 +109,7 @@
             </div>
         </div>
 
-    </div> <!-- End Container -->
+    </div>
 
     <!-- ========================================== -->
     <!-- 🛠 MODAL 1: สร้างโปรเจกต์หลัก -->
@@ -124,6 +126,13 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">ชื่อโปรเจกต์</label>
                     <input type="text" id="projName" required class="w-full rounded-xl border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
+                
+                <!-- 🌟 เพิ่มผู้รับผิดชอบ -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">👤 ผู้รับผิดชอบ (PM)</label>
+                    <input type="text" id="projAssignee" list="assigneeList" class="w-full rounded-xl border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="พิมพ์ชื่อ หรือ เลือกจากรายการ">
+                </div>
+
                 <div class="flex gap-3">
                     <div class="w-1/2">
                         <label class="block text-sm font-bold text-gray-700 mb-1">วันเริ่มต้น</label>
@@ -134,7 +143,23 @@
                         <input type="date" id="projEnd" required class="w-full rounded-xl border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 mt-4">บันทึกโปรเจกต์</button>
+
+                <!-- 🌟 เลือก Template -->
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mt-2">
+                    <label class="block text-sm font-bold text-blue-800 mb-2">รูปแบบ Action Plan</label>
+                    <div class="flex flex-col gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="projTemplate" value="pms" class="w-4 h-4 text-blue-600" checked>
+                            <span class="text-sm font-medium text-gray-700">Standard PMS (สร้าง 5 เฟสมาตรฐานให้อัตโนมัติ)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="projTemplate" value="custom" class="w-4 h-4 text-blue-600">
+                            <span class="text-sm font-medium text-gray-700">Custom (โปรเจกต์เปล่า ไปกดเพิ่มงานเอง)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 mt-4 shadow-md">บันทึกโปรเจกต์</button>
             </form>
         </div>
     </div>
@@ -152,7 +177,6 @@
             <form id="taskForm" class="space-y-4">
                 <input type="hidden" id="editTaskId" value="">
                 
-                <!-- เลือกผูกโปรเจกต์ -->
                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
                     <label class="block text-xs font-bold text-blue-800 uppercase tracking-wide mb-1">🔗 สังกัดโปรเจกต์ (Action Plan)</label>
                     <select id="taskProjectId" class="w-full rounded-lg border-blue-200 border p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-400">
@@ -161,26 +185,42 @@
                     </select>
                 </div>
 
+                <!-- 🌟 ชื่อภารกิจ (ดึงลิสต์มาตรฐานมาแนะนำได้) -->
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">ชื่องาน / รายการที่ต้องทำ</label>
-                    <input type="text" id="taskName" required class="w-full rounded-xl border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">ชื่องาน / เฟสการทำงาน</label>
+                    <input type="text" id="taskName" list="standardTaskList" required class="w-full rounded-xl border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="พิมพ์ชื่อ หรือ เลือกมาตรฐาน">
                 </div>
 
-                <!-- Matrix -->
+                <!-- 🌟 เพิ่มผู้รับผิดชอบ -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">👤 ผู้รับผิดชอบ (Assignee)</label>
+                    <input type="text" id="taskAssignee" list="assigneeList" class="w-full rounded-xl border-gray-300 border p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="พิมพ์ชื่อ หรือ เลือกจากรายการ">
+                </div>
+
                 <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200">
                     <label class="block text-sm font-black text-gray-800 mb-1">ระดับความสำคัญ (Eisenhower)</label>
                     <select id="taskMatrix" class="w-full rounded-lg border-yellow-300 p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-yellow-400">
                         <option value="4">🔥 สำคัญ + เร่งด่วน (ทำทันที)</option>
-                        <option value="3">⭐ สำคัญ + ไม่เร่งด่วน (จัดเวลาทำ)</option>
+                        <option value="3" selected>⭐ สำคัญ + ไม่เร่งด่วน (จัดเวลาทำ)</option>
                         <option value="2">⚡ ไม่สำคัญ + เร่งด่วน (รีบเคลียร์)</option>
                         <option value="1">☁️ ไม่สำคัญ + ไม่เร่งด่วน (ทำทีหลัง)</option>
                     </select>
                 </div>
 
-                <!-- วันและเวลา -->
+                <!-- 🌟 อัปเกรดวันและเวลา (มีวันเริ่ม-วันจบ เพื่อเป็นบาร์ใน Gantt) -->
                 <div class="bg-green-50 p-3 rounded-xl border border-green-200">
-                    <label class="block text-sm font-bold text-gray-800 mb-1">กำหนดการ (Timeline)</label>
-                    <input type="date" id="taskDate" required class="w-full rounded-lg border-green-300 p-2 text-sm focus:ring-2 focus:ring-green-400 outline-none mb-2 bg-white">
+                    <label class="block text-sm font-bold text-gray-800 mb-2">กำหนดการ (Timeline)</label>
+                    <div class="flex gap-2 mb-2">
+                        <div class="w-1/2">
+                            <label class="block text-[10px] text-green-700 font-bold mb-1">วันเริ่ม (ไม่บังคับ)</label>
+                            <input type="date" id="taskStartDate" class="w-full rounded-lg border-green-300 p-2 text-sm focus:ring-2 focus:ring-green-400 outline-none bg-white">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-[10px] text-green-700 font-bold mb-1">วันสิ้นสุด/กำหนดส่ง</label>
+                            <input type="date" id="taskDate" required class="w-full rounded-lg border-green-300 p-2 text-sm focus:ring-2 focus:ring-green-400 outline-none bg-white">
+                        </div>
+                    </div>
+                    
                     <div class="flex items-center gap-2">
                         <div class="w-1/2">
                             <label class="block text-[10px] text-green-700 font-bold mb-1">เวลาเริ่ม</label>
@@ -205,23 +245,20 @@
 
         // 🛑🛑 ใส่ API Key ของ "โปรเจกต์ GitHub ใหม่" ของคุณตรงนี้ 🛑🛑
         const firebaseConfig = {
-          apiKey: "AIzaSyALe0wK_guwyHH2AthPctx7z9N2dVIJCy0",
-          authDomain: "gchart-ba517.firebaseapp.com",
-          projectId: "gchart-ba517",
-          storageBucket: "gchart-ba517.firebasestorage.app",
-          messagingSenderId: "748519469867",
-          appId: "1:748519469867:web:b88fb82b48a552f75f4b6e",
-          measurementId: "G-WBV1EQ7YS9"
+            apiKey: "AIzaSyALe0wK_guwyHH2AthPctx7z9N2dVIJCy0",
+            authDomain: "gchart-ba517.firebaseapp.com",
+            projectId: "gchart-ba517",
+            storageBucket: "gchart-ba517.firebasestorage.app",
+            messagingSenderId: "748519469867",
+            appId: "1:748519469867:web:b88fb82b48a552f75f4b6e",
+            measurementId: "G-WBV1EQ7YS9"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // 🌟 ตารางใหม่เอี่ยม แยกโปรเจกต์กับงานชัดเจน
         const projCol = collection(db, "projects");
         const taskCol = collection(db, "tasks");
-        
-        // ลิงก์ Calendar GAS (ถ้าใช้ตัวเดิม ก็แปะตัวเดิมได้เลย)
         const GAS_CALENDAR_URL = "https://script.google.com/macros/s/AKfycbzwuQltKiLAoCHfDE86csfw9lSAT3Wz5VIGEO-CH3Kop5_h9nWePkE8rW0F353VL3vE/exec";
 
         let allProjects = [];
@@ -229,24 +266,26 @@
         
         const matrixColors = { "4": "text-red-500", "3": "text-orange-500", "2": "text-yellow-500", "1": "text-gray-400" };
 
-        // ==========================================
-        // 🚀 ONE-TIME LOAD (ดึงข้อมูลรอบเดียวเก็บใน RAM)
-        // ==========================================
+        // 🌟 อัปเดตรายชื่อคนรับผิดชอบอัตโนมัติ
+        function extractAssignees() {
+            const names = new Set();
+            allProjects.forEach(p => p.assignee && p.assignee.trim() !== '' && names.add(p.assignee.trim()));
+            allTasks.forEach(t => t.assignee && t.assignee.trim() !== '' && names.add(t.assignee.trim()));
+            document.getElementById('assigneeList').innerHTML = [...names].map(n => `<option value="${n}">`).join('');
+        }
+
         async function loadDataFromDB() {
             try {
-                // โหลด Projects
                 const projSnap = await getDocs(projCol);
                 allProjects = [];
                 projSnap.forEach(d => allProjects.push({ id: d.id, ...d.data() }));
 
-                // โหลด Tasks
                 const taskSnap = await getDocs(taskCol);
                 allTasks = [];
                 taskSnap.forEach(d => allTasks.push({ id: d.id, ...d.data() }));
 
-                // เติม Project ใส่ Dropdown ในหน้าเพิ่มงาน
                 updateProjectDropdown();
-
+                extractAssignees(); // ดึงรายชื่อคนเข้า Dropdown
                 refreshUI();
             } catch (error) {
                 console.error(error);
@@ -254,9 +293,6 @@
             }
         }
 
-        // ==========================================
-        // 🔄 ระบบ Refresh หน้าจอ (ดึงจาก RAM)
-        // ==========================================
         window.refreshUI = function() {
             if(!document.getElementById('summaryView').classList.contains('hidden')) renderSummary();
             if(!document.getElementById('projectView').classList.contains('hidden')) renderGantt();
@@ -278,14 +314,10 @@
             refreshUI();
         };
 
-        // ==========================================
-        // 📊 Render 1: Summary Dashboard
-        // ==========================================
         function renderSummary() {
             const offset = new Date().getTimezoneOffset() * 60000;
             const todayStr = new Date(Date.now() - offset).toISOString().split('T')[0];
 
-            // ภารกิจวันนี้
             const todays = allTasks.filter(t => t.specificDate === todayStr && !t.isCompleted).sort((a,b) => b.matrix - a.matrix);
             let todayHtml = '';
             if(todays.length === 0) {
@@ -293,11 +325,12 @@
             } else {
                 todays.slice(0, 5).forEach(t => {
                     const pName = t.projectId ? ` <span class="text-[10px] bg-blue-100 text-blue-600 px-1 rounded ml-1">[${getProjName(t.projectId)}]</span>` : '';
+                    const aName = t.assignee ? ` <span class="text-[9px] bg-gray-200 text-gray-600 px-1 rounded">👤 ${t.assignee}</span>` : '';
                     todayHtml += `
                         <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
                             <div class="flex items-center gap-2">
                                 <span class="text-lg leading-none ${matrixColors[t.matrix]}">•</span>
-                                <span class="text-sm font-bold text-gray-700">${t.name}${pName}</span>
+                                <span class="text-sm font-bold text-gray-700">${t.name}${pName}${aName}</span>
                             </div>
                             <span class="text-[11px] text-gray-500 bg-gray-100 px-2 py-1 rounded">${t.startTime}</span>
                         </div>
@@ -306,7 +339,6 @@
             }
             document.getElementById('sumTodayTasks').innerHTML = todayHtml;
 
-            // Matrix
             const pending = allTasks.filter(t => !t.isCompleted);
             document.getElementById('sumM4').innerText = pending.filter(t => String(t.matrix) === '4').length;
             document.getElementById('sumM3').innerText = pending.filter(t => String(t.matrix) === '3').length;
@@ -315,7 +347,7 @@
         }
 
         // ==========================================
-        // 🗓️ Render 2: GANTT CHART (The Core Feature)
+        // 🗓️ Render Gantt Chart (อัปเกรดแบบมี Bar)
         // ==========================================
         function renderGantt() {
             const ganttHeader = document.getElementById('ganttHeader');
@@ -327,10 +359,9 @@
                 return;
             }
 
-            // 1. คำนวณขอบเขต Timeline (ย้อนหลัง 15 วัน ไปจนถึง โปรเจกต์ที่ไกลที่สุด)
             const today = new Date();
             let minDate = new Date(today.getTime() - (15 * 24 * 60 * 60 * 1000)); 
-            let maxDate = new Date(today.getTime() + (60 * 24 * 60 * 60 * 1000)); // Default +60 days
+            let maxDate = new Date(today.getTime() + (60 * 24 * 60 * 60 * 1000)); 
 
             allProjects.forEach(p => {
                 const s = new Date(p.startDate);
@@ -338,16 +369,13 @@
                 if(s < minDate) minDate = s;
                 if(e > maxDate) maxDate = e;
             });
-            // เผื่อขอบขวาไว้ 15 วัน
             maxDate = new Date(maxDate.getTime() + (15 * 24 * 60 * 60 * 1000)); 
             const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
 
-            // 2. สร้าง Header รายเดือน (อย่างง่าย)
             ganttHeader.innerHTML = `<div class="w-1/3 p-3 border-r border-gray-200">ชื่อโปรเจกต์ / ภารกิจย่อย</div>`;
             const timelineDiv = document.createElement('div');
             timelineDiv.className = "w-2/3 relative h-10 border-b border-gray-200";
             
-            // วาดเส้นแบ่งเดือน
             let mRunner = new Date(minDate);
             while(mRunner <= maxDate) {
                 if(mRunner.getDate() === 1 || mRunner.getTime() === minDate.getTime()) {
@@ -359,10 +387,7 @@
             }
             ganttHeader.appendChild(timelineDiv);
 
-            // 3. สร้าง Rows สำหรับแต่ละ Project
             let html = '';
-            
-            // ลากเส้น Today
             const todayLeft = ((today - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
             html += `<div class="absolute top-0 bottom-0 border-l-2 border-red-400 z-0 opacity-50 pointer-events-none" style="left: calc(33.33% + ${todayLeft * 0.666}%);"></div>`;
 
@@ -372,19 +397,19 @@
                 const pLeft = Math.max(0, ((pStart - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100);
                 const pWidth = ((pEnd - pStart) / (1000 * 60 * 60 * 24)) / totalDays * 100;
 
-                // คำนวณ Progress จาก Task ลูก
                 const childTasks = allTasks.filter(t => t.projectId === proj.id);
                 const doneTasks = childTasks.filter(t => t.isCompleted).length;
                 const progress = childTasks.length === 0 ? 0 : Math.round((doneTasks/childTasks.length)*100);
+                
+                const pAssignee = proj.assignee ? `<span class="text-[9px] bg-gray-200 text-gray-700 px-1 rounded ml-2">👤 ${proj.assignee}</span>` : '';
 
                 html += `
                 <div class="border-b border-gray-100 relative z-10 bg-white">
-                    <!-- Project Row -->
                     <div class="flex items-stretch hover:bg-indigo-50 transition cursor-pointer group" onclick="document.getElementById('sub-${proj.id}').classList.toggle('hidden')">
                         <div class="w-1/3 p-3 text-sm font-bold text-indigo-700 border-r border-gray-200 flex items-center justify-between">
                             <div class="flex items-center gap-2 truncate">
                                 <span class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded group-hover:bg-indigo-200">▼</span>
-                                ${proj.name}
+                                ${proj.name} ${pAssignee}
                             </div>
                             <span class="text-xs text-indigo-400 font-mono">${progress}%</span>
                         </div>
@@ -394,50 +419,53 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Tasks Sub-Row (Action Plans) -->
                     <div id="sub-${proj.id}" class="bg-gray-50 border-t border-gray-100 hidden shadow-inner pb-2">
                 `;
 
                 if(childTasks.length === 0) {
-                    html += `<div class="p-2 text-xs text-gray-400 pl-10">ยังไม่มีงานในโปรเจกต์นี้</div>`;
+                    html += `<div class="p-2 text-xs text-gray-400 pl-10">ยังไม่มี Action Plan ในโปรเจกต์นี้</div>`;
                 }
 
-                // เรียง Task ตามวันที่
                 childTasks.sort((a,b) => new Date(a.specificDate) - new Date(b.specificDate)).forEach(task => {
-                    const tDate = new Date(task.specificDate);
-                    const tLeft = ((tDate - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
+                    const tEnd = new Date(task.specificDate);
+                    const tEndLeft = ((tEnd - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
                     
                     const tColor = task.isCompleted ? 'bg-green-400' : 'bg-yellow-400';
                     const tText = task.isCompleted ? 'line-through text-gray-400' : 'text-gray-700';
+                    const tAssignee = task.assignee ? `<span class="text-[9px] bg-gray-200 text-gray-600 px-1 rounded ml-1">👤 ${task.assignee}</span>` : '';
+
+                    let barHtml = '';
+                    // 🌟 ถ้ามีวันเริ่ม ให้วาดเป็นหลอด (Bar) ถ้าไม่มีให้วาดเป็นจุด (Dot)
+                    if (task.startDate) {
+                        const tStart = new Date(task.startDate);
+                        const tStartLeft = Math.max(0, ((tStart - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100);
+                        const tWidth = ((tEnd - tStart) / (1000 * 60 * 60 * 24)) / totalDays * 100;
+                        barHtml = `<div class="absolute rounded-md h-2.5 ${tColor} shadow-sm border border-white" style="left: ${tStartLeft}%; width: ${Math.max(1, tWidth)}%;" title="${task.startDate} ถึง ${task.specificDate}"></div>`;
+                    } else {
+                        barHtml = `<div class="absolute w-2.5 h-2.5 rounded-full ${tColor} shadow-sm border border-white" style="left: ${tEndLeft}%; transform: translateX(-50%);" title="${task.specificDate}"></div>`;
+                    }
 
                     html += `
                         <div class="flex items-center border-b border-gray-100/50 border-dashed last:border-0 hover:bg-gray-100 transition">
                             <div class="w-1/3 p-2 pl-10 text-[11px] font-medium ${tText} border-r border-gray-200 flex justify-between items-center truncate pr-2">
-                                <span>${task.isCompleted ? '✅' : '⏳'} ${task.name}</span>
-                                <button onclick="toggleTaskStatus('${task.id}', ${task.isCompleted})" class="text-xs border px-1.5 py-0.5 rounded bg-white hover:bg-gray-200">${task.isCompleted ? 'Cancel' : 'Done'}</button>
+                                <span class="truncate pr-1">${task.isCompleted ? '✅' : '⏳'} ${task.name} ${tAssignee}</span>
+                                <button onclick="toggleTaskStatus('${task.id}', ${task.isCompleted})" class="text-[10px] border px-1.5 py-0.5 rounded bg-white hover:bg-gray-200 shrink-0">${task.isCompleted ? 'Cancel' : 'Done'}</button>
                             </div>
                             <div class="w-2/3 relative h-7 flex items-center px-0">
-                                <!-- จุด Task (เพราะเป็นงานวันเดียว) -->
-                                <div class="absolute w-2.5 h-2.5 rounded-full ${tColor} shadow-sm border border-white" style="left: ${tLeft}%; transform: translateX(-50%);" title="${task.specificDate}"></div>
+                                ${barHtml}
                             </div>
                         </div>
                     `;
                 });
 
-                html += `</div></div>`; // End Sub-Row & Project
+                html += `</div></div>`; 
             });
             
             ganttBody.innerHTML = html;
         }
 
-        // ==========================================
-        // 📝 Render 3: LIST VIEW (รายการทั่วไป)
-        // ==========================================
         function renderTaskList() {
             const container = document.getElementById('taskListContainer');
-            
-            // เอางานที่ไม่เสร็จขึ้นก่อน แล้วเรียงตามวันที่
             let sortedTasks = [...allTasks].sort((a, b) => {
                 if(a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
                 return new Date(a.specificDate) - new Date(b.specificDate);
@@ -450,13 +478,14 @@
 
             sortedTasks.forEach(task => {
                 const pName = task.projectId ? getProjName(task.projectId) : 'งานทั่วไป';
+                const aName = task.assignee ? ` | 👤 ${task.assignee}` : '';
                 container.innerHTML += `
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col ${task.isCompleted ? 'completed-item' : ''}">
                         <div class="flex justify-between items-start mb-2">
                             <h4 class="font-bold text-gray-800 ${task.isCompleted ? 'line-through' : ''}">${task.name}</h4>
                             <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded font-bold">${pName}</span>
                         </div>
-                        <p class="text-xs text-green-600 font-bold mb-4">📅 ${task.specificDate} | 🕒 ${task.startTime} - ${task.endTime}</p>
+                        <p class="text-xs text-green-600 font-bold mb-4">📅 ${task.startDate ? task.startDate+' ถึง ' : ''}${task.specificDate} | 🕒 ${task.startTime} ${aName}</p>
                         
                         <div class="mt-auto border-t border-gray-50 pt-3 flex justify-between">
                             <button onclick="deleteTask('${task.id}')" class="text-xs text-red-500 font-bold hover:underline">ลบ</button>
@@ -474,9 +503,6 @@
             return p ? p.name : 'Unknown';
         }
 
-        // ==========================================
-        // 🛠 Action Functions
-        // ==========================================
         function updateProjectDropdown() {
             const sel = document.getElementById('taskProjectId');
             sel.innerHTML = '<option value="">-- ไม่ผูกโปรเจกต์ (งานทั่วไป/To-do) --</option>';
@@ -498,24 +524,71 @@
             if(confirm("ลบงานนี้?")) {
                 await deleteDoc(doc(db, "tasks", id));
                 allTasks = allTasks.filter(t => t.id !== id);
+                extractAssignees();
                 refreshUI();
             }
         };
+
+        // 🌟 ฟังก์ชันสร้าง PMS Standard Tasks
+        async function createPMSTasks(projectId, startDateStr, endDateStr, assignee) {
+            const start = new Date(startDateStr);
+            const end = new Date(endDateStr);
+            const totalDays = (end - start) / (1000 * 60 * 60 * 24);
+
+            const phases = [
+                { name: "1. Initiation (เริ่มต้นโครงการ)", sPct: 0, ePct: 0.1 },
+                { name: "2. Planning (วางแผนและออกแบบ)", sPct: 0.1, ePct: 0.3 },
+                { name: "3. Execution (ลงมือปฏิบัติ)", sPct: 0.3, ePct: 0.8 },
+                { name: "4. Monitoring (ติดตามและควบคุม)", sPct: 0.3, ePct: 0.8 },
+                { name: "5. Closure (ส่งมอบและปิดโครงการ)", sPct: 0.8, ePct: 1.0 }
+            ];
+
+            for(let p of phases) {
+                const tStart = new Date(start.getTime() + (totalDays * p.sPct * 24 * 60 * 60 * 1000));
+                const tEnd = new Date(start.getTime() + (totalDays * p.ePct * 24 * 60 * 60 * 1000));
+                
+                const data = {
+                    projectId: projectId,
+                    name: p.name,
+                    assignee: assignee,
+                    matrix: "3", // สำคัญแต่ไม่เร่งด่วน
+                    startDate: tStart.toISOString().split('T')[0],
+                    specificDate: tEnd.toISOString().split('T')[0], // วันจบ
+                    startTime: "09:00",
+                    endTime: "17:00",
+                    isCompleted: false,
+                    createdAt: new Date().toISOString()
+                };
+
+                const res = await addDoc(taskCol, data);
+                allTasks.push({ id: res.id, ...data });
+            }
+        }
 
         // Form Submit: Project
         document.getElementById('projectForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
                 name: document.getElementById('projName').value,
+                assignee: document.getElementById('projAssignee').value,
                 startDate: document.getElementById('projStart').value,
                 endDate: document.getElementById('projEnd').value,
                 status: 'active',
                 createdAt: new Date().toISOString()
             };
+            const template = document.querySelector('input[name="projTemplate"]:checked').value;
+
             try {
                 const res = await addDoc(projCol, data);
                 allProjects.push({ id: res.id, ...data });
+                
+                // 🌟 ถ้าเลือก Standard ให้สร้าง 5 งานอัตโนมัติ
+                if(template === 'pms') {
+                    await createPMSTasks(res.id, data.startDate, data.endDate, data.assignee);
+                }
+
                 updateProjectDropdown();
+                extractAssignees();
                 toggleModal('projectModal');
                 refreshUI();
             } catch (error) { alert("Error saving project"); }
@@ -527,7 +600,9 @@
             const data = {
                 projectId: document.getElementById('taskProjectId').value,
                 name: document.getElementById('taskName').value,
+                assignee: document.getElementById('taskAssignee').value,
                 matrix: document.getElementById('taskMatrix').value,
+                startDate: document.getElementById('taskStartDate').value, // เพิ่มวันเริ่ม
                 specificDate: document.getElementById('taskDate').value,
                 startTime: document.getElementById('taskStartTime').value,
                 endTime: document.getElementById('taskEndTime').value,
@@ -539,7 +614,6 @@
                 const res = await addDoc(taskCol, data);
                 allTasks.push({ id: res.id, ...data });
                 
-                // ยิง Calendar
                 fetch(GAS_CALENDAR_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -550,17 +624,14 @@
                     })
                 });
 
+                extractAssignees();
                 toggleModal('taskModal');
                 refreshUI();
             } catch (error) { alert("Error saving task"); }
         });
 
-        // ==========================================
-        // Modal Handlers
-        // ==========================================
         window.openProjectModal = function() {
             document.getElementById('projectForm').reset();
-            // Default dates
             const t = new Date();
             document.getElementById('projStart').value = t.toISOString().split('T')[0];
             t.setMonth(t.getMonth() + 1);
@@ -581,7 +652,6 @@
             document.body.classList.toggle('modal-active', !m.classList.contains('opacity-0'));
         };
 
-        // เริ่มโหลดข้อมูล
         loadDataFromDB();
     </script>
 </body>
