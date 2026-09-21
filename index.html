@@ -21,7 +21,6 @@
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Datalist -->
     <datalist id="assigneeList"></datalist>
     <datalist id="standardTaskList">
         <option value="1. Initiation (เริ่มต้น/ประเมินโครงการ)">
@@ -32,7 +31,6 @@
     </datalist>
 
     <div class="max-w-6xl mx-auto w-full p-4 md:p-6 mt-2">
-        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-indigo-700 tracking-tight">🎯 All-in-One Tracker V2</h1>
@@ -48,7 +46,6 @@
             </div>
         </div>
 
-        <!-- แถบเมนูนำทาง -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
             <div class="flex bg-gray-100 p-1.5 rounded-xl w-full md:w-auto overflow-hidden">
                 <button onclick="switchView('summary')" id="nav-summary" class="flex-1 px-6 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-indigo-600 transition">📊 สรุปภาพรวม</button>
@@ -57,9 +54,7 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 📊 VIEW 1: SUMMARY DASHBOARD -->
-        <!-- ========================================== -->
+        <!-- VIEW 1: SUMMARY -->
         <div id="summaryView" class="animate-pop pb-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
@@ -78,9 +73,7 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 🗓️ VIEW 2: PROJECT & GANTT CHART -->
-        <!-- ========================================== -->
+        <!-- VIEW 2: GANTT CHART -->
         <div id="projectView" class="hidden animate-pop pb-10">
             <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -98,20 +91,15 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 📝 VIEW 3: LIST VIEW -->
-        <!-- ========================================== -->
+        <!-- VIEW 3: LIST VIEW -->
         <div id="listView" class="hidden animate-pop pb-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="taskListContainer">
                 <div class="col-span-full text-center py-10 text-gray-400">กำลังโหลดข้อมูล...</div>
             </div>
         </div>
-
     </div>
 
-    <!-- ========================================== -->
-    <!-- 🛠 MODAL 1: โปรเจกต์หลัก -->
-    <!-- ========================================== -->
+    <!-- MODAL: โปรเจกต์หลัก -->
     <div class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50 px-4" id="projectModal">
         <div class="absolute w-full h-full bg-black opacity-50" onclick="toggleModal('projectModal')"></div>
         <div class="bg-white w-full max-w-md mx-auto rounded-3xl shadow-2xl z-50 overflow-y-auto p-6 animate-pop">
@@ -145,7 +133,7 @@
                     <div class="flex flex-col gap-2">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="projTemplate" value="pms" class="w-4 h-4 text-blue-600" checked>
-                            <span class="text-sm font-medium text-gray-700">Standard PMS (สร้าง 5 เฟสมาตรฐาน)</span>
+                            <span class="text-sm font-medium text-gray-700">Standard PMS (แบ่ง 5 เฟสต่อเนื่อง)</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="projTemplate" value="custom" class="w-4 h-4 text-blue-600">
@@ -158,9 +146,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 🛠 MODAL 2: งาน / Action Plan -->
-    <!-- ========================================== -->
+    <!-- MODAL: งาน / Action Plan -->
     <div class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50 px-4" id="taskModal">
         <div class="absolute w-full h-full bg-black opacity-50" onclick="toggleModal('taskModal')"></div>
         <div class="bg-white w-full max-w-md mx-auto rounded-3xl shadow-2xl z-50 overflow-y-auto max-h-[90vh] p-6 animate-pop">
@@ -198,15 +184,21 @@
                     </select>
                 </div>
 
-                <div class="bg-green-50 p-3 rounded-xl border border-green-200">
+                <div class="bg-green-50 p-4 rounded-xl border border-green-200">
                     <label class="block text-sm font-bold text-gray-800 mb-2">กำหนดการ (Timeline)</label>
-                    <div class="flex gap-2 mb-2">
-                        <div class="w-1/2">
-                            <label class="block text-[10px] text-green-700 font-bold mb-1">วันเริ่ม (ไม่บังคับ)</label>
+                    
+                    <!-- 🌟 ระบบคำนวณวันอัจฉริยะ -->
+                    <div class="flex gap-2 mb-3 items-end">
+                        <div class="w-1/3">
+                            <label class="block text-[10px] text-green-700 font-bold mb-1">📅 วันเริ่ม</label>
                             <input type="date" id="taskStartDate" class="w-full rounded-lg border-green-300 p-2 text-sm focus:ring-2 focus:ring-green-400 outline-none bg-white">
                         </div>
-                        <div class="w-1/2">
-                            <label class="block text-[10px] text-green-700 font-bold mb-1">วันสิ้นสุด/กำหนดส่ง</label>
+                        <div class="w-1/3">
+                            <label class="block text-[10px] text-green-700 font-bold mb-1 text-center">⏳ ระยะเวลา (วัน)</label>
+                            <input type="number" id="taskDuration" min="1" class="w-full rounded-lg border-green-300 p-2 text-sm focus:ring-2 focus:ring-green-400 outline-none bg-white text-center font-bold text-green-700" placeholder="ระบุวัน">
+                        </div>
+                        <div class="w-1/3">
+                            <label class="block text-[10px] text-green-700 font-bold mb-1">🏁 วันสิ้นสุด</label>
                             <input type="date" id="taskDate" required class="w-full rounded-lg border-green-300 p-2 text-sm focus:ring-2 focus:ring-green-400 outline-none bg-white">
                         </div>
                     </div>
@@ -217,10 +209,24 @@
                             <input type="time" id="taskStartTime" value="08:00" class="w-full rounded-lg border-green-300 p-2 text-sm bg-white focus:ring-2 focus:ring-green-400 outline-none">
                         </div>
                         <div class="w-1/2">
-                            <label class="block text-[10px] text-green-700 font-bold mb-1">เวลาเสร็จ</label>
+                            <label class="block text-[10px] text-green-700 font-bold mb-1">เวลาเสร็จ (Auto +1 ชม.)</label>
                             <input type="time" id="taskEndTime" value="09:00" class="w-full rounded-lg border-green-300 p-2 text-sm bg-white focus:ring-2 focus:ring-green-400 outline-none">
                         </div>
                     </div>
+                </div>
+
+                <!-- 🌟 กล่องควบคุมการ Overlap -->
+                <div id="autoShiftBox" class="hidden mt-2 border border-orange-200 bg-orange-50 p-3 rounded-xl shadow-inner">
+                    <label class="flex items-start cursor-pointer group">
+                        <input type="checkbox" id="autoShiftCheck" checked class="w-5 h-5 text-orange-600 rounded mt-0.5 cursor-pointer">
+                        <span class="ml-2 text-sm font-bold text-orange-700 group-hover:text-orange-800 transition">
+                            ➡️ เรียงคิวงานถัดไปอัตโนมัติ
+                            <br>
+                            <span class="text-[11px] font-medium text-orange-600 leading-tight block mt-0.5">
+                                (ติ๊กออก หากต้องการให้งานแก้ไขนี้ "ทับซ้อน (Overlap)" กับงานคิวอื่นได้)
+                            </span>
+                        </span>
+                    </label>
                 </div>
 
                 <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 mt-4 shadow-lg">บันทึกงาน</button>
@@ -249,10 +255,10 @@
         
         const projCol = collection(db, "projects");
         const taskCol = collection(db, "tasks");
-        const GAS_CALENDAR_URL = "https://script.google.com/macros/s/AKfycbzwuQltKiLAoCHfDE86csfw9lSAT3Wz5VIGEO-CH3Kop5_h9nWePkE8rW0F353VL3vE/exec";
 
         let allProjects = [];
         let allTasks = [];
+        let collapsedProjects = new Set(); // 📌 เก็บสถานะการพับโปรเจกต์ (ถ้าโปรเจกต์ไม่อยู่ในนี้แปลว่ากางอยู่)
         
         const matrixColors = { "4": "text-red-500", "3": "text-orange-500", "2": "text-yellow-500", "1": "text-gray-400" };
 
@@ -276,9 +282,7 @@
                 updateProjectDropdown();
                 extractAssignees(); 
                 refreshUI();
-            } catch (error) {
-                console.error(error);
-            }
+            } catch (error) { console.error(error); }
         }
 
         window.refreshUI = function() {
@@ -297,6 +301,78 @@
 
             document.getElementById(`${view}View`).classList.remove('hidden');
             document.getElementById(`nav-${view}`).className = "flex-1 px-6 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-indigo-600 transition";
+            refreshUI();
+        };
+
+        // 🌟 1. ระบบทดเวลา +1 ชั่วโมงอัตโนมัติ
+        document.getElementById('taskStartTime').addEventListener('change', function() {
+            if(this.value) {
+                let [h, m] = this.value.split(':');
+                h = (parseInt(h) + 1).toString().padStart(2, '0');
+                if(h === '24') h = '00';
+                document.getElementById('taskEndTime').value = `${h}:${m}`;
+            }
+        });
+
+        // 🌟 2. ระบบคำนวณ จำนวนวัน <-> วันที่สิ้นสุด แบบ Realtime
+        const dStart = document.getElementById('taskStartDate');
+        const dDur = document.getElementById('taskDuration');
+        const dEnd = document.getElementById('taskDate');
+
+        function updateEndFromDur() {
+            if(dStart.value && dDur.value) {
+                let d = new Date(dStart.value);
+                d.setDate(d.getDate() + parseInt(dDur.value) - 1); // จำนวน 1 วัน คือจบวันเดิม
+                dEnd.value = d.toISOString().split('T')[0];
+            }
+        }
+        function updateDurFromEnd() {
+            if(dStart.value && dEnd.value) {
+                let s = new Date(dStart.value);
+                let e = new Date(dEnd.value);
+                let diff = Math.round((e - s)/(1000*60*60*24)) + 1;
+                dDur.value = diff > 0 ? diff : 1;
+            }
+        }
+        dStart.addEventListener('change', updateEndFromDur);
+        dDur.addEventListener('input', updateEndFromDur);
+        dEnd.addEventListener('change', updateDurFromEnd);
+
+        // 🌟 ระบบเรียงคิวอัตโนมัติเมื่อเลือกเพิ่มงานใส่โปรเจกต์ (กันการทับกันแต่แรกเริ่ม)
+        document.getElementById('taskProjectId').addEventListener('change', function() {
+            const pId = this.value;
+            if(pId) {
+                const pTasks = allTasks.filter(t => t.projectId === pId);
+                if(pTasks.length > 0) {
+                    let latestEnd = new Date(pTasks[0].specificDate);
+                    pTasks.forEach(t => {
+                        let d = new Date(t.specificDate);
+                        if(d > latestEnd) latestEnd = d;
+                    });
+                    latestEnd.setDate(latestEnd.getDate() + 1); // เด้งไปเริ่มวันถัดจากงานล่าสุด
+                    const nextDay = latestEnd.toISOString().split('T')[0];
+                    dStart.value = nextDay;
+                    dDur.value = 1;
+                    updateEndFromDur();
+                } else {
+                    const proj = allProjects.find(p => p.id === pId);
+                    if (proj && proj.startDate) {
+                        dStart.value = proj.startDate;
+                        dDur.value = 1;
+                        updateEndFromDur();
+                    }
+                }
+            }
+        });
+
+        // 🌟 3. ระบบจำการ พับ/กาง โปรเจกต์
+        window.toggleProjectCollapse = function(projId, event) {
+            if(event) event.stopPropagation(); // กันไม่ให้ไปเปิด Modal แก้ไขโปรเจกต์
+            if(collapsedProjects.has(projId)) {
+                collapsedProjects.delete(projId); // เอากลับมากาง
+            } else {
+                collapsedProjects.add(projId); // จับพับ
+            }
             refreshUI();
         };
 
@@ -338,8 +414,7 @@
             
             if(allProjects.length === 0) {
                 ganttBody.innerHTML = '<div class="py-10 text-center text-gray-400">ยังไม่มีโปรเจกต์ กดสร้างด้านบนได้เลยครับ</div>';
-                ganttHeader.innerHTML = '';
-                return;
+                ganttHeader.innerHTML = ''; return;
             }
 
             const today = new Date();
@@ -386,14 +461,17 @@
                 
                 const pAssignee = proj.assignee ? `<span class="text-[9px] bg-gray-200 text-gray-700 px-1 rounded ml-1">👤 ${proj.assignee}</span>` : '';
 
+                // 📌 ลอจิกซ่อน/โชว์ จาก State Memory (ค่าเริ่มต้นคือกางโชว์ตลอด)
+                const isHidden = collapsedProjects.has(proj.id) ? 'hidden' : '';
+                const arrowIcon = collapsedProjects.has(proj.id) ? '▶' : '▼';
+
                 html += `
                 <div class="border-b border-gray-100 relative z-10 bg-white">
-                    <div class="flex items-stretch hover:bg-indigo-50 transition cursor-pointer group" onclick="document.getElementById('sub-${proj.id}').classList.toggle('hidden')">
+                    <div class="flex items-stretch hover:bg-indigo-50 transition cursor-pointer group" onclick="toggleProjectCollapse('${proj.id}', event)">
                         <div class="w-1/3 p-3 text-sm font-bold text-indigo-700 border-r border-gray-200 flex items-center justify-between">
                             <div class="flex items-center truncate">
-                                <span class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded group-hover:bg-indigo-200 mr-2">▼</span>
+                                <span class="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded group-hover:bg-indigo-200 mr-2 w-5 text-center">${arrowIcon}</span>
                                 <span class="truncate">${proj.name}</span> ${pAssignee}
-                                <!-- ✏️ ปุ่มแก้ไขโปรเจกต์ -->
                                 <button onclick="event.stopPropagation(); editProject('${proj.id}')" class="text-[10px] bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded hover:bg-gray-100 ml-2 shrink-0">✏️</button>
                             </div>
                             <span class="text-xs text-indigo-400 font-mono">${progress}%</span>
@@ -404,7 +482,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="sub-${proj.id}" class="bg-gray-50 border-t border-gray-100 hidden shadow-inner pb-2">
+                    <div id="sub-${proj.id}" class="bg-gray-50 border-t border-gray-100 ${isHidden} shadow-inner pb-2">
                 `;
 
                 if(childTasks.length === 0) {
@@ -434,7 +512,6 @@
                             <div class="w-1/3 p-2 pl-10 text-[11px] font-medium ${tText} border-r border-gray-200 flex justify-between items-center truncate pr-2 group">
                                 <span class="truncate pr-1">${task.isCompleted ? '✅' : '⏳'} ${task.name} ${tAssignee}</span>
                                 <div class="flex gap-1 shrink-0">
-                                    <!-- ✏️ ปุ่มแก้ไขงาน -->
                                     <button onclick="editTask('${task.id}')" class="text-[10px] border px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 hover:bg-blue-100">✏️</button>
                                     <button onclick="toggleTaskStatus('${task.id}', ${task.isCompleted})" class="text-[10px] border px-1.5 py-0.5 rounded bg-white hover:bg-gray-200">${task.isCompleted ? 'Cancel' : 'Done'}</button>
                                 </div>
@@ -445,10 +522,8 @@
                         </div>
                     `;
                 });
-
                 html += `</div></div>`; 
             });
-            
             ganttBody.innerHTML = html;
         }
 
@@ -478,7 +553,6 @@
                         <div class="mt-auto border-t border-gray-50 pt-3 flex justify-between">
                             <div class="flex gap-3">
                                 <button onclick="deleteTask('${task.id}')" class="text-xs text-red-500 font-bold hover:underline">ลบ</button>
-                                <!-- ✏️ ปุ่มแก้ไขงานในหน้ารายการ -->
                                 <button onclick="editTask('${task.id}')" class="text-xs text-blue-500 font-bold hover:underline">แก้ไข</button>
                             </div>
                             <button onclick="toggleTaskStatus('${task.id}', ${task.isCompleted})" class="text-xs px-3 py-1.5 rounded-lg font-bold ${task.isCompleted ? 'bg-gray-200' : 'bg-green-500 text-white'}">
@@ -521,7 +595,6 @@
             }
         };
 
-        // 🌟 ดึงข้อมูลมาใส่ Modal เพื่อเตรียมแก้ไข
         window.editProject = function(id) {
             const p = allProjects.find(x => x.id === id);
             if(!p) return;
@@ -532,11 +605,10 @@
             document.getElementById('projEnd').value = p.endDate || "";
             
             document.getElementById('projectModalTitle').innerText = "✏️ แก้ไขโปรเจกต์";
-            document.getElementById('projTemplateContainer').classList.add('hidden'); // ซ่อนส่วน template ตอนแก้
+            document.getElementById('projTemplateContainer').classList.add('hidden'); 
             toggleModal('projectModal');
         };
 
-        // 🌟 ดึงข้อมูลงานมาใส่ Modal เพื่อเตรียมแก้ไข
         window.editTask = function(id) {
             const t = allTasks.find(x => x.id === id);
             if(!t) return;
@@ -545,11 +617,21 @@
             document.getElementById('taskName').value = t.name || "";
             document.getElementById('taskAssignee').value = t.assignee || "";
             document.getElementById('taskMatrix').value = t.matrix || "3";
-            document.getElementById('taskStartDate').value = t.startDate || "";
+            document.getElementById('taskStartDate').value = t.startDate || t.specificDate;
             document.getElementById('taskDate').value = t.specificDate || "";
             document.getElementById('taskStartTime').value = t.startTime || "08:00";
             document.getElementById('taskEndTime').value = t.endTime || "09:00";
             
+            updateDurFromEnd(); // คำนวณจำนวนวันไปหยอดใส่ช่อง
+            
+            // โชว์กล่องดันวันอัตโนมัติ ถ้ามี Project และเป็นการแก้ไข
+            if(t.projectId) {
+                document.getElementById('autoShiftBox').classList.remove('hidden');
+                document.getElementById('autoShiftCheck').checked = true; // เปิด Auto Shift ไว้เป็น Default
+            } else {
+                document.getElementById('autoShiftBox').classList.add('hidden');
+            }
+
             document.getElementById('taskModalTitle').innerText = "✏️ แก้ไขงาน/Action Plan";
             toggleModal('taskModal');
         };
@@ -557,39 +639,44 @@
         async function createPMSTasks(projectId, startDateStr, endDateStr, assignee) {
             const start = new Date(startDateStr);
             const end = new Date(endDateStr);
-            const totalDays = (end - start) / (1000 * 60 * 60 * 24);
+            const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
 
             const phases = [
-                { name: "1. Initiation (เริ่มต้นโครงการ)", sPct: 0, ePct: 0.1 },
-                { name: "2. Planning (วางแผนและออกแบบ)", sPct: 0.1, ePct: 0.3 },
-                { name: "3. Execution (ลงมือปฏิบัติ)", sPct: 0.3, ePct: 0.8 },
-                { name: "4. Monitoring (ติดตามและควบคุม)", sPct: 0.3, ePct: 0.8 },
-                { name: "5. Closure (ส่งมอบและปิดโครงการ)", sPct: 0.8, ePct: 1.0 }
+                { name: "1. Initiation (เริ่มต้นโครงการ)", dur: 0.1 },
+                { name: "2. Planning (วางแผนและออกแบบ)", dur: 0.2 },
+                { name: "3. Execution (ลงมือปฏิบัติ)", dur: 0.4 },
+                { name: "4. Monitoring (ติดตามและควบคุม)", dur: 0.2 },
+                { name: "5. Closure (ส่งมอบและปิดโครงการ)", dur: 0.1 }
             ];
 
+            let currentStart = new Date(start);
             for(let p of phases) {
-                const tStart = new Date(start.getTime() + (totalDays * p.sPct * 24 * 60 * 60 * 1000));
-                const tEnd = new Date(start.getTime() + (totalDays * p.ePct * 24 * 60 * 60 * 1000));
+                let phaseDays = Math.max(1, Math.round(totalDays * p.dur));
+                let currentEnd = new Date(currentStart);
+                currentEnd.setDate(currentEnd.getDate() + phaseDays - 1);
                 
                 const data = {
                     projectId: projectId,
                     name: p.name,
                     assignee: assignee,
                     matrix: "3", 
-                    startDate: tStart.toISOString().split('T')[0],
-                    specificDate: tEnd.toISOString().split('T')[0], 
+                    startDate: currentStart.toISOString().split('T')[0],
+                    specificDate: currentEnd.toISOString().split('T')[0], 
                     startTime: "09:00",
-                    endTime: "17:00",
+                    endTime: "10:00",
                     isCompleted: false,
                     createdAt: new Date().toISOString()
                 };
 
                 const res = await addDoc(taskCol, data);
                 allTasks.push({ id: res.id, ...data });
+
+                // ขยับวันเริ่มของเฟสถัดไป ให้ต่อกันแบบไม่ทับซ้อน
+                currentStart = new Date(currentEnd);
+                currentStart.setDate(currentStart.getDate() + 1); 
             }
         }
 
-        // Form Submit: Project (รองรับทั้ง Add และ Edit)
         document.getElementById('projectForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editProjId').value;
@@ -602,17 +689,16 @@
 
             try {
                 if(editId) {
-                    // Update
                     await updateDoc(doc(db, "projects", editId), data);
                     const idx = allProjects.findIndex(p => p.id === editId);
                     if(idx > -1) allProjects[idx] = { ...allProjects[idx], ...data };
                 } else {
-                    // Add
                     data.status = 'active';
                     data.createdAt = new Date().toISOString();
                     const template = document.querySelector('input[name="projTemplate"]:checked').value;
                     const res = await addDoc(projCol, data);
                     allProjects.push({ id: res.id, ...data });
+                    
                     if(template === 'pms') {
                         await createPMSTasks(res.id, data.startDate, data.endDate, data.assignee);
                     }
@@ -625,7 +711,6 @@
             } catch (error) { alert("Error saving project"); }
         });
 
-        // Form Submit: Task / Action Plan (รองรับทั้ง Add และ Edit)
         document.getElementById('taskForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editTaskId').value;
@@ -642,26 +727,46 @@
 
             try {
                 if (editId) {
-                    // Update
+                    // 🌟 ดึงงานเดิมมาเทียบ เพื่อคำนวณ Auto-shift
+                    const oldTask = allTasks.find(t => t.id === editId);
+                    const oldEnd = new Date(oldTask.specificDate);
+                    const newEnd = new Date(data.specificDate);
+                    const diffDays = Math.round((newEnd - oldEnd) / (1000*60*60*24));
+
                     await updateDoc(doc(db, "tasks", editId), data);
                     const idx = allTasks.findIndex(t => t.id === editId);
                     if(idx > -1) allTasks[idx] = { ...allTasks[idx], ...data };
+
+                    // 🌟 4. ระบบดันคิวงานอัตโนมัติ (ขยับงานลำดับถัดไป)
+                    const isAutoShift = document.getElementById('autoShiftCheck').checked;
+                    if (diffDays !== 0 && data.projectId && isAutoShift) {
+                        const siblingTasks = allTasks.filter(t => t.projectId === data.projectId && t.id !== editId);
+                        for (let st of siblingTasks) {
+                            const stStart = new Date(st.startDate || st.specificDate);
+                            const oldStart = new Date(oldTask.startDate || oldTask.specificDate);
+                            
+                            // ดันเฉพาะงานที่เคย "ตั้งต้นคิว" อยู่หลังงานที่โดนแก้
+                            if (stStart > oldStart) {
+                                if(st.startDate) {
+                                    let s = new Date(st.startDate);
+                                    s.setDate(s.getDate() + diffDays);
+                                    st.startDate = s.toISOString().split('T')[0];
+                                }
+                                if(st.specificDate) {
+                                    let e = new Date(st.specificDate);
+                                    e.setDate(e.getDate() + diffDays);
+                                    st.specificDate = e.toISOString().split('T')[0];
+                                }
+                                await updateDoc(doc(db, "tasks", st.id), { startDate: st.startDate || null, specificDate: st.specificDate });
+                            }
+                        }
+                    }
+
                 } else {
-                    // Add
                     data.isCompleted = false;
                     data.createdAt = new Date().toISOString();
                     const res = await addDoc(taskCol, data);
                     allTasks.push({ id: res.id, ...data });
-                    
-                    fetch(GAS_CALENDAR_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({
-                            name: data.name + (data.projectId ? ` [Project]` : ''), 
-                            itemType: 'todo', specificDate: data.specificDate, 
-                            startTime: data.startTime, endTime: data.endTime
-                        })
-                    });
                 }
 
                 extractAssignees();
@@ -674,7 +779,7 @@
             document.getElementById('projectForm').reset();
             document.getElementById('editProjId').value = "";
             document.getElementById('projectModalTitle').innerText = "📁 สร้างโปรเจกต์ใหม่";
-            document.getElementById('projTemplateContainer').classList.remove('hidden'); // โชว์ส่วน template ตอนสร้างใหม่
+            document.getElementById('projTemplateContainer').classList.remove('hidden'); 
             const t = new Date();
             document.getElementById('projStart').value = t.toISOString().split('T')[0];
             t.setMonth(t.getMonth() + 1);
@@ -686,7 +791,10 @@
             document.getElementById('taskForm').reset();
             document.getElementById('editTaskId').value = "";
             document.getElementById('taskModalTitle').innerText = "📝 เพิ่มงาน/Action Plan";
+            document.getElementById('taskStartDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('taskDuration').value = 1;
+            document.getElementById('autoShiftBox').classList.add('hidden'); // ซ่อนกล่องดันคิวตอนเพิ่มงานใหม่
             toggleModal('taskModal');
         };
 
